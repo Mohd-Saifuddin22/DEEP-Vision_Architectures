@@ -1,119 +1,153 @@
-## Deep CNN Training: MiniVGG on CIFAR-10 (CUDA Enabled)
+# Deep CNN Training: MiniVGG & ResNet on CIFAR-10 (CUDA Enabled)
 
 ---
 
-## 📌 Task Objective
+## 📌 Project Objective
 
-Train a deeper Convolutional Neural Network (CNN) using a custom-built MiniVGG architecture on the CIFAR-10 dataset with PyTorch and CUDA. This project also explores training efficiency using `pin_memory`, batch normalization, and a learning rate scheduler.
+Build and compare three convolutional architectures on the CIFAR-10 dataset using PyTorch and CUDA:
 
----
-
-## ⚙️ Model Architecture
-
-Two model versions are included in this repo:
-
-### 🧪 Original MiniVGG
-A basic convolutional model without BatchNorm or learning rate scheduling.
-
-### 🔧 Optimized MiniVGG
-An improved architecture with:
-
-- ✅ **Batch Normalization** after each convolution
-- ✅ **StepLR Learning Rate Scheduler**
-- ✅ Better generalization and stability
-
-#### 📐 Layers in Optimized MiniVGG:
-
-**Convolutional Blocks:**
-- Conv2D (3, 32, 3, padding=1) → BatchNorm2D → ReLU  
-- Conv2D (32, 32, 3, padding=1) → BatchNorm2D → ReLU  
-- MaxPool2D (2, 2)
-
-- Conv2D (32, 64, 3, padding=1) → BatchNorm2D → ReLU  
-- Conv2D (64, 64, 3, padding=1) → BatchNorm2D → ReLU  
-- MaxPool2D (2, 2)
-
-**Fully Connected:**
-- Flatten  
-- Linear (64×8×8, 512) → ReLU → Dropout(0.5)  
-- Linear (512, 10)
+1. ✅ **MiniVGG** – Baseline CNN architecture
+2. ✅ **MiniVGG Optimized** – Enhanced with BatchNorm & Learning Rate Scheduler
+3. ✅ **MiniResNet** – Lightweight ResNet-style model with residual connections
 
 ---
 
-## 📊 Dataset
+## 📊 Dataset Details
 
-- Dataset: **CIFAR-10**
-- Training Samples: 50,000
-- Test Samples: 10,000
-- Classes: Plane, Car, Bird, Cat, Deer, Dog, Frog, Horse, Ship, Truck
-
----
-
-## 🔧 Hyperparameters (Optimized Model)
-
-| Parameter       | Value            |
-|----------------|------------------|
-| Epochs         | 20               |
-| Batch Size     | 64               |
-| Optimizer      | Adam             |
-| Initial LR     | 0.001            |
-| LR Scheduler   | StepLR(step=10, γ=0.5) |
-| Loss Function  | CrossEntropyLoss |
-| Device         | CUDA             |
-| Pin Memory     | ✅ Enabled (True) |
+- **Dataset**: CIFAR-10
+- **Images**: 60,000 color images (32×32)
+- **Training Set**: 50,000 images
+- **Test Set**: 10,000 images
+- **Classes**: Airplane, Car, Bird, Cat, Deer, Dog, Frog, Horse, Ship, Truck
 
 ---
 
-## 🚀 Training Results (Optimized Model)
+## ⚙️ Model Architectures
 
-| Epoch | Accuracy | Training Loss |
-|-------|----------|----------------|
-| 1     | 79.30%   | 0.1747 |
-| 5     | 79.32%   | 0.1023 |
-| 10    | 79.33%   | 0.0957 |
-| 15    | 79.24%   | 0.0961 |
-| 20    | **79.36%** ✅ | 0.0969 |
+### 🔹 MiniVGG (Baseline)
 
-📈 **Previous Best Accuracy**: 77.36%  
-🔥 **Improved Accuracy**: **79.36%**
+- 2 Conv layers → MaxPool  
+- 2 Conv layers → MaxPool  
+- Flatten → Dense → Dropout → Output
+
+🔧 No BatchNorm or Scheduler  
+🧪 Achieved: **77.36%** Test Accuracy
 
 ---
 
-## ⏱ Training Time Comparison
+### 🔹 MiniVGG Optimized
 
-| Model Version         | pin_memory | Epochs | Total Time     |
-|----------------------|------------|--------|----------------|
-| MINI_VGG (original)  | ❌ No       | 10     | 3.94 minutes   |
-| MINI_VGG (original)  | ✅ Yes      | 10     | **2.84 minutes** ✅ |
-| MINI_VGG (optimized) | ✅ Yes      | 20     | **5.98 minutes** ✅ |
+- Same layout as baseline
+- ✅ BatchNorm after each Conv layer
+- ✅ StepLR Scheduler (step=10, γ=0.5)
 
-✅ **pin_memory** consistently reduces data transfer time from CPU to GPU, improving training throughput.
+📈 **Improved Accuracy**: **79.36%**  
+📉 Lower Training Loss  
+🚀 Stable over 20 epochs  
+🕐 Training Time (20 epochs): **5.98 min**
 
-📌 Even with double the epochs, the optimized model completes training under 6 minutes.
+---
+
+### 🔹 MiniResNet (Custom ResNet-Style)
+
+- Conv → ResBlock1 → MaxPool  
+- ResBlock2 → MaxPool  
+- AdaptiveAvgPool → Flatten → FC  
+- Residual Blocks with Conv-BN-ReLU layers
+
+✅ Early Stopping  
+✅ ReduceLROnPlateau Scheduler  
+✅ Data Augmentation  
+📈 Best Validation Accuracy: **77.96%**  
+🧪 Final Test Accuracy: **78.05%**
+
+---
+
+## 🧪 Performance Summary
+
+| Model              | Epochs | Scheduler        | BatchNorm | Final Val Acc | Test Acc | Training Time |
+|-------------------|--------|------------------|-----------|---------------|----------|----------------|
+| MiniVGG (Baseline)| 10     | ❌ None           | ❌ No     | 77.64%        | **77.36%** | 2.84 min (pin) |
+| MiniVGG Optimized | 20     | ✅ StepLR         | ✅ Yes    | 79.36%        | **79.36%** | 5.98 min       |
+| MiniResNet        | 20     | ✅ ReduceLROnPlateau | ✅ Yes | 77.96%        | **78.05%** | ~6–7 min (est.) |
+
+---
+
+## 🔧 Hyperparameters Used
+
+| Parameter       | MiniVGG     | MiniVGG Optimized | MiniResNet |
+|----------------|-------------|-------------------|-------------|
+| Batch Size     | 64          | 64                | 64          |
+| Learning Rate  | 0.001       | 0.001             | 0.001       |
+| Optimizer      | Adam        | Adam              | Adam        |
+| Epochs         | 10          | 20                | 20          |
+| Scheduler      | ❌ None     | ✅ StepLR         | ✅ ReduceLROnPlateau |
+| Early Stopping | ❌ No       | ❌ No             | ✅ Yes       |
+| Pin Memory     | ✅ Yes      | ✅ Yes            | ✅ Yes       |
+| Augmentation   | ❌ No       | ❌ No             | ✅ RandomCrop + Flip |
+
+---
+
+## 🖼 Model Architectures (Layer-wise)
+
+### 🧱 MiniVGG Optimized
+
+- Conv(3→32) → BN → ReLU  
+- Conv(32→32) → BN → ReLU → MaxPool  
+- Conv(32→64) → BN → ReLU  
+- Conv(64→64) → BN → ReLU → MaxPool  
+- FC(64×8×8 → 512) → Dropout(0.5) → FC(10)
+
+---
+
+### 🧱 MiniResNet
+
+- Conv(3→32) → BN → ReLU  
+- Residual Block: [Conv→BN→ReLU→Conv→BN + shortcut] → ReLU  
+- MaxPool  
+- Residual Block: [Conv→BN→ReLU→Conv→BN + shortcut] → ReLU  
+- MaxPool  
+- AdaptiveAvgPool → Flatten → FC(64→10)
 
 ---
 
 ## 🧠 Key Improvements
 
-- ✅ Added **Batch Normalization** for faster convergence  
-- ✅ Introduced **Learning Rate Scheduler** for adaptive learning  
-- ✅ Improved **training accuracy and stability**  
-- ✅ CUDA efficiency with **pin_memory=True**
+- ✅ **Batch Normalization** stabilized training and reduced overfitting
+- ✅ **Schedulers** helped fine-tune learning rate dynamically
+- ✅ **Early Stopping** prevented overfitting in ResNet
+- ✅ **pin_memory=True** enabled faster data transfer to GPU
+- ✅ **Residual Blocks** improved gradient flow and boosted accuracy
 
 ---
 
-## 💾 Files in this Repo
+## 💾 Files Included
 
-| File                          | Description                                     |
-|-------------------------------|-------------------------------------------------|
-| `MINI_VGG.ipynb`              | Original MiniVGG training script               |
-| `Mini_VGG optimized.ipynb`    | Optimized model with BatchNorm + LR Scheduler |
-| `README.md`                   | This documentation                             |
+| File                        | Description                               |
+|-----------------------------|-------------------------------------------|
+| `MINI_VGG.ipynb`            | Baseline MiniVGG architecture             |
+| `Mini_VGG optimized.ipynb`  | Optimized MiniVGG with BatchNorm + LR Scheduler |
+| `Mini_ResNet.ipynb`         | Custom lightweight ResNet implementation |
+| `README.md`                 | Documentation and performance summary     |
 
 ---
 
-## 🔬 CUDA Optimization Insight
+## 🧪 Final Test Results (Best Accuracy)
 
-- `pin_memory=True` enables faster data transfer from host (CPU) to device (GPU).
-- Especially beneficial in smaller datasets like CIFAR-10 with medium batch sizes.
-- Helps overlap CPU-GPU workloads using asynchronous streams.
+| Model            | Test Accuracy |
+|------------------|---------------|
+| MiniVGG          | 77.36%        |
+| MiniVGG Optimized| **79.36%** ✅ |
+| MiniResNet       | 78.05%        |
+
+---
+
+## 👤 Author
+
+**Mohd Saifuddin**  
+📧 mohdsaifuddin22@gmail.com  
+🐙 [GitHub: @Mohd-Saifuddin22](https://github.com/Mohd-Saifuddin22)
+
+---
+
+⭐ **If you found this helpful, star the repo! Contributions welcome.**
