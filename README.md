@@ -145,7 +145,7 @@ Build and compare three convolutional architectures on the CIFAR-10 dataset usin
 ## 👤 Author
 
 **Mohd Saifuddin**  
-📧 mohdsaifuddin22@gmail.com  
+📧 msaif.lkn@gmail.com  
 🐙 [GitHub: @Mohd-Saifuddin22](https://github.com/Mohd-Saifuddin22)
 
 ---
