@@ -1,153 +1,124 @@
-# Deep CNN Training: MiniVGG & ResNet on CIFAR-10 (CUDA Enabled)
+# DEEP Vision Architectures: MiniVGG, ResNet & Vision Transformer on CIFAR-10 (CUDA Optimized)
 
 ---
 
 ## 📌 Project Objective
 
-Build and compare three convolutional architectures on the CIFAR-10 dataset using PyTorch and CUDA:
+Build, train, and compare multiple deep learning architectures on the CIFAR-10 dataset using PyTorch with CUDA acceleration. This repository showcases an evolutionary journey from classical CNNs to advanced Transformer-based vision models:
 
-1. ✅ **MiniVGG** – Baseline CNN architecture
-2. ✅ **MiniVGG Optimized** – Enhanced with BatchNorm & Learning Rate Scheduler
-3. ✅ **MiniResNet** – Lightweight ResNet-style model with residual connections
+1. ✅ MiniVGG — Simple convolutional model  
+2. ✅ MiniVGG Optimized — BatchNorm & LR Scheduling  
+3. ✅ MiniResNet — Residual learning for deeper representation  
+4. ✅ Vision Transformer (ViT) — Attention-based representation learning
 
 ---
 
 ## 📊 Dataset Details
 
-- **Dataset**: CIFAR-10
-- **Images**: 60,000 color images (32×32)
-- **Training Set**: 50,000 images
-- **Test Set**: 10,000 images
+- **Dataset**: CIFAR-10  
+- **Images**: 60,000 color images of 10 categories (32×32)  
+- **Split**: 50,000 for training, 10,000 for testing  
 - **Classes**: Airplane, Car, Bird, Cat, Deer, Dog, Frog, Horse, Ship, Truck
 
 ---
 
-## ⚙️ Model Architectures
+## 🧠 Model Architectures
 
-### 🔹 MiniVGG (Baseline)
-
-- 2 Conv layers → MaxPool  
-- 2 Conv layers → MaxPool  
-- Flatten → Dense → Dropout → Output
-
-🔧 No BatchNorm or Scheduler  
-🧪 Achieved: **77.36%** Test Accuracy
-
----
+### 🔹 MiniVGG (Baseline CNN)
+- 4 Conv layers → MaxPooling  
+- Fully Connected → Dropout → Output  
+- ❌ No normalization  
+- ❌ No scheduler  
 
 ### 🔹 MiniVGG Optimized
+- Same layout as MiniVGG  
+- ✅ Batch Normalization after each Conv  
+- ✅ StepLR Scheduler (step=10, γ=0.5)  
+- ✅ More stable and higher accuracy  
 
-- Same layout as baseline
-- ✅ BatchNorm after each Conv layer
-- ✅ StepLR Scheduler (step=10, γ=0.5)
+### 🔹 MiniResNet
+- 2 Residual Blocks with Conv-BN-ReLU  
+- Initial Conv → Residual Blocks → Adaptive Pool → FC  
+- ✅ ReduceLROnPlateau Scheduler  
+- ✅ Early Stopping  
+- ✅ Better generalization & gradient flow  
 
-📈 **Improved Accuracy**: **79.36%**  
-📉 Lower Training Loss  
-🚀 Stable over 20 epochs  
-🕐 Training Time (20 epochs): **5.98 min**
-
----
-
-### 🔹 MiniResNet (Custom ResNet-Style)
-
-- Conv → ResBlock1 → MaxPool  
-- ResBlock2 → MaxPool  
-- AdaptiveAvgPool → Flatten → FC  
-- Residual Blocks with Conv-BN-ReLU layers
-
-✅ Early Stopping  
-✅ ReduceLROnPlateau Scheduler  
-✅ Data Augmentation  
-📈 Best Validation Accuracy: **77.96%**  
-🧪 Final Test Accuracy: **78.05%**
+### 🔹 Vision Transformer (ViT)
+- Patch-based embedding using Conv2D  
+- Learnable [CLS] token and positional embeddings  
+- Transformer Encoder with 8 layers, 8 heads  
+- MLP classification head  
+- ✅ Warmup + Cosine Annealing LR Scheduler  
+- ✅ RandAugment + Strong Regularization  
+- ✅ Attention-based global learning
 
 ---
 
-## 🧪 Performance Summary
+## 🧪 Results Comparison
 
-| Model              | Epochs | Scheduler        | BatchNorm | Final Val Acc | Test Acc | Training Time |
-|-------------------|--------|------------------|-----------|---------------|----------|----------------|
-| MiniVGG (Baseline)| 10     | ❌ None           | ❌ No     | 77.64%        | **77.36%** | 2.84 min (pin) |
-| MiniVGG Optimized | 20     | ✅ StepLR         | ✅ Yes    | 79.36%        | **79.36%** | 5.98 min       |
-| MiniResNet        | 20     | ✅ ReduceLROnPlateau | ✅ Yes | 77.96%        | **78.05%** | ~6–7 min (est.) |
-
----
-
-## 🔧 Hyperparameters Used
-
-| Parameter       | MiniVGG     | MiniVGG Optimized | MiniResNet |
-|----------------|-------------|-------------------|-------------|
-| Batch Size     | 64          | 64                | 64          |
-| Learning Rate  | 0.001       | 0.001             | 0.001       |
-| Optimizer      | Adam        | Adam              | Adam        |
-| Epochs         | 10          | 20                | 20          |
-| Scheduler      | ❌ None     | ✅ StepLR         | ✅ ReduceLROnPlateau |
-| Early Stopping | ❌ No       | ❌ No             | ✅ Yes       |
-| Pin Memory     | ✅ Yes      | ✅ Yes            | ✅ Yes       |
-| Augmentation   | ❌ No       | ❌ No             | ✅ RandomCrop + Flip |
+| Model               | Epochs | Final Val Acc | Final Test Acc | Best Val Epoch | Total Training Time |
+|--------------------|--------|----------------|----------------|----------------|----------------------|
+| MiniVGG            | 10     | 77.64%         | **77.36%**     | 10             | 2.84 min (pin=True)  |
+| MiniVGG Optimized  | 20     | 79.36%         | **79.36%** ✅   | 20             | 5.98 min             |
+| MiniResNet         | 20     | 77.96%         | **78.05%**     | 20             | ~6.5 min             |
+| Vision Transformer | 25     | 78.62%         | **78.62%**     | 25             | **1498.44 sec (~25 min)** ⏱️ |
 
 ---
 
-## 🖼 Model Architectures (Layer-wise)
+## 🔧 Training Details
 
-### 🧱 MiniVGG Optimized
-
-- Conv(3→32) → BN → ReLU  
-- Conv(32→32) → BN → ReLU → MaxPool  
-- Conv(32→64) → BN → ReLU  
-- Conv(64→64) → BN → ReLU → MaxPool  
-- FC(64×8×8 → 512) → Dropout(0.5) → FC(10)
-
----
-
-### 🧱 MiniResNet
-
-- Conv(3→32) → BN → ReLU  
-- Residual Block: [Conv→BN→ReLU→Conv→BN + shortcut] → ReLU  
-- MaxPool  
-- Residual Block: [Conv→BN→ReLU→Conv→BN + shortcut] → ReLU  
-- MaxPool  
-- AdaptiveAvgPool → Flatten → FC(64→10)
+| Feature               | MiniVGG | MiniVGG Optimized | MiniResNet | Vision Transformer |
+|-----------------------|---------|-------------------|------------|---------------------|
+| BatchNorm             | ❌      | ✅                | ✅         | ✅                  |
+| Scheduler             | ❌      | StepLR            | ReduceLROnPlateau | Warmup + Cosine   |
+| Early Stopping        | ❌      | ❌                | ✅         | ❌                  |
+| Optimizer             | Adam    | Adam              | Adam       | AdamW               |
+| Augmentation          | Basic   | Basic             | RandCrop + Flip | RandAugment + Flip |
+| Epochs                | 10      | 20                | 20         | 25                  |
+| Pin Memory            | ✅      | ✅                | ✅         | ✅                  |
 
 ---
 
-## 🧠 Key Improvements
+## 🧩 Transformer Details (ViT)
 
-- ✅ **Batch Normalization** stabilized training and reduced overfitting
-- ✅ **Schedulers** helped fine-tune learning rate dynamically
-- ✅ **Early Stopping** prevented overfitting in ResNet
-- ✅ **pin_memory=True** enabled faster data transfer to GPU
-- ✅ **Residual Blocks** improved gradient flow and boosted accuracy
-
----
-
-## 💾 Files Included
-
-| File                        | Description                               |
-|-----------------------------|-------------------------------------------|
-| `MINI_VGG.ipynb`            | Baseline MiniVGG architecture             |
-| `Mini_VGG optimized.ipynb`  | Optimized MiniVGG with BatchNorm + LR Scheduler |
-| `Mini_ResNet.ipynb`         | Custom lightweight ResNet implementation |
-| `README.md`                 | Documentation and performance summary     |
+| Parameter           | Value    |
+|---------------------|----------|
+| Patch Size          | 4×4      |
+| Embedding Dim       | 256      |
+| Layers (Depth)      | 8        |
+| Attention Heads     | 8        |
+| MLP Hidden Dim      | 512      |
+| Dropout             | 0.1      |
+| LR Scheduler        | WarmupCosineAnnealingLR |
+| LR                  | 3e-4     |
+| RandAugment         | ✅ num_ops=2, magnitude=9 |
+| Weight Decay        | 1e-4     |
+| Final Accuracy      | **78.62%** 🎯 |
 
 ---
 
-## 🧪 Final Test Results (Best Accuracy)
+## 📦 Repository Structure
 
-| Model            | Test Accuracy |
-|------------------|---------------|
-| MiniVGG          | 77.36%        |
-| MiniVGG Optimized| **79.36%** ✅ |
-| MiniResNet       | 78.05%        |
-
----
-
-## 👤 Author
-
-**Mohd Saifuddin**  
-📧 msaif.lkn@gmail.com  
-🐙 [GitHub: @Mohd-Saifuddin22](https://github.com/Mohd-Saifuddin22)
+| File / Folder                | Description |
+|-----------------------------|-------------|
+| `MINI_VGG.ipynb`            | Baseline CNN |
+| `Mini_VGG optimized.ipynb`  | CNN with BatchNorm + Scheduler |
+| `Mini_ResNet.ipynb`         | Lightweight ResNet |
+| `VisionTransformer.ipynb`   | Vision Transformer on CIFAR-10 |
+| `README.md`                 | This full documentation |
+| `./data`                    | CIFAR-10 dataset (downloaded automatically) |
 
 ---
 
-⭐ **If you found this helpful, star the repo! Contributions welcome.**
+## 🔮 Insights & Observations
+
+- **MiniVGG Optimized** gave the best accuracy (79.36%) in shortest time.
+- **ResNet** introduced better gradient flow via skip connections.
+- **ViT** achieved 78.62% with attention and no convolutions after patching.
+- Training ViT is **more resource-intensive** but demonstrates strong performance with enough tuning.
+- ⚠️ ViT requires **more data or augmentations** to outperform CNNs on small datasets.
+
+
+
+⭐ If this repo helped you, please **star it** and share your feedback!
+
